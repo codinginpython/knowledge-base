@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Knowledge Base</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1B2A41">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <h1>Knowledge Base</h1>
+  <div class="tagline">PDF · EPUB · News — এক জায়গায়, ফোলিও ০০১ থেকে</div>
+  <button class="settings-btn" id="settings-btn">সেটিংস</button>
+</header>
+
+<section class="resurface" id="resurface" style="display:none">
+  <span class="label">পুরনো পাতা থেকে</span>
+  <div id="resurface-cards"></div>
+</section>
+
+<section class="controls">
+  <input type="search" id="search-input" placeholder="খুঁজুন — শব্দ, বইয়ের নাম, বিষয়...">
+  <span class="chip source-chip active" data-source="">সব</span>
+  <span class="chip source-chip" data-source="pdf">PDF</span>
+  <span class="chip source-chip" data-source="epub">EPUB</span>
+  <span class="chip source-chip" data-source="news">News</span>
+  <span class="chip" id="flag-toggle">★ ফ্ল্যাগড</span>
+</section>
+
+<div class="tag-row" id="tag-row"></div>
+
+<main id="entries"></main>
+
+<div class="modal-backdrop" id="settings-modal" style="display:none">
+  <div class="modal">
+    <h2>সংযোগ সেটিংস</h2>
+    <p class="hint">Worker API URL আর টোকেন দিন — এটা শুধু আপনার ডিভাইসে সেভ থাকবে।</p>
+    <label>API Base URL</label>
+    <input type="text" id="settings-base" placeholder="https://knowledge-base.yourname.workers.dev">
+    <label>Token</label>
+    <input type="text" id="settings-token" placeholder="আপনার API টোকেন">
+    <div class="modal-actions">
+      <button class="btn secondary" id="settings-cancel">বাতিল</button>
+      <button class="btn" id="settings-save">সেভ করুন</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

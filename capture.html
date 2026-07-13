@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capture — Knowledge Base</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1B2A41">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <h1>নতুন এন্ট্রি</h1>
+  <div class="tagline">শেয়ার করা লেখা জমা দিন</div>
+</header>
+
+<div style="padding:20px; max-width:480px;">
+  <label style="display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-soft);margin-bottom:4px;">শিরোনাম / পত্রিকা</label>
+  <input type="text" id="cap-title" style="width:100%;padding:9px 10px;border:1px solid var(--rule-strong);border-radius:3px;margin-bottom:14px;font-family:'IBM Plex Sans',sans-serif;">
+
+  <label style="display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-soft);margin-bottom:4px;">হাইলাইট করা টেক্সট</label>
+  <textarea id="cap-text" rows="6" style="width:100%;padding:9px 10px;border:1px solid var(--rule-strong);border-radius:3px;margin-bottom:14px;font-family:'IBM Plex Sans',sans-serif;"></textarea>
+
+  <label style="display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-soft);margin-bottom:4px;">নোট (ঐচ্ছিক)</label>
+  <input type="text" id="cap-note" style="width:100%;padding:9px 10px;border:1px solid var(--rule-strong);border-radius:3px;margin-bottom:14px;font-family:'IBM Plex Sans',sans-serif;">
+
+  <label style="display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-soft);margin-bottom:4px;">ট্যাগ (কমা দিয়ে আলাদা)</label>
+  <input type="text" id="cap-tags" style="width:100%;padding:9px 10px;border:1px solid var(--rule-strong);border-radius:3px;margin-bottom:20px;font-family:'IBM Plex Mono',monospace;">
+
+  <input type="hidden" id="cap-url">
+
+  <button class="btn" id="cap-save" style="width:100%;padding:12px;">সেভ করুন</button>
+  <p id="cap-status" style="margin-top:12px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);"></p>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  document.getElementById("cap-title").value = params.get("title") || "";
+  document.getElementById("cap-text").value = params.get("text") || "";
+  document.getElementById("cap-url").value = params.get("url") || params.get("text") || "";
+
+  document.getElementById("cap-save").addEventListener("click", async () => {
+    const apiBase = localStorage.getItem("kb_api_base");
+    const token = localStorage.getItem("kb_token");
+    const status = document.getElementById("cap-status");
+    if (!apiBase || !token) {
+      status.textContent = "আগে মূল পেজ খুলে সেটিংসে API যোগ করুন।";
+      return;
+    }
+    const payload = {
+      source_type: "news",
+      source_app: "share",
+      title: document.getElementById("cap-title").value || "Untitled",
+      highlighted_text: document.getElementById("cap-text").value,
+      note: document.getElementById("cap-note").value,
+      tags: document.getElementById("cap-tags").value,
+      original_link: document.getElementById("cap-url").value,
+    };
+    status.textContent = "সেভ হচ্ছে...";
+    try {
+      const res = await fetch(apiBase.replace(/\/$/, "") + "/api/highlights", {
+        method: "POST",
+        headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error();
+      status.textContent = "সেভ হয়েছে ✓";
+      setTimeout(() => window.close(), 900);
+    } catch (e) {
+      status.textContent = "সমস্যা হয়েছে, আবার চেষ্টা করুন।";
+    }
+  });
+</script>
+</body>
+</html>
