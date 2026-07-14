@@ -3,6 +3,7 @@ const state = {
   token: localStorage.getItem("kb_token") || "",
   source: "",
   tag: "",
+  title: "",
   flagged: false,
   q: "",
 };
@@ -105,6 +106,7 @@ async function loadEntries() {
   if (state.q) params.set("q", state.q);
   if (state.source) params.set("source", state.source);
   if (state.tag) params.set("tag", state.tag);
+  if (state.title) params.set("title", state.title);
   if (state.flagged) params.set("flagged", "1");
   params.set("limit", "60");
 
@@ -128,6 +130,29 @@ async function loadTags() {
       (t) => `<span class="tag-chip ${state.tag === t ? "active" : ""}" data-tag="${escapeHtml(t)}">${escapeHtml(t)}</span>`
     ).join("");
   } catch (e) { /* silent */ }
+}
+
+async function loadTitles(source) {
+  const row = $("title-row");
+  const select = $("title-select");
+  if (!source) {
+    row.style.display = "none";
+    state.title = "";
+    return;
+  }
+  try {
+    const data = await apiFetch("/api/titles?source=" + encodeURIComponent(source));
+    if (!data.titles.length) {
+      row.style.display = "none";
+      state.title = "";
+      return;
+    }
+    row.style.display = "flex";
+    select.innerHTML = `<option value="">— সব বই/ডকুমেন্ট (${data.titles.length}) —</option>` +
+      data.titles.map((t) => `<option value="${escapeHtml(t.title)}">${escapeHtml(t.title)} (${t.c})</option>`).join("");
+  } catch (e) {
+    row.style.display = "none";
+  }
 }
 
 async function loadResurface() {
@@ -157,9 +182,16 @@ function bindEvents() {
   document.querySelectorAll(".source-chip").forEach((chip) => {
     chip.addEventListener("click", () => {
       state.source = chip.dataset.source;
+      state.title = "";
       document.querySelectorAll(".source-chip").forEach((c) => c.classList.toggle("active", c === chip));
+      loadTitles(state.source);
       loadEntries();
     });
+  });
+
+  $("title-select").addEventListener("change", (e) => {
+    state.title = e.target.value;
+    loadEntries();
   });
 
   $("flag-toggle").addEventListener("click", () => {
