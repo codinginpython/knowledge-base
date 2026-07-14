@@ -6,6 +6,9 @@ const state = {
   title: "",
   flagged: false,
   q: "",
+  offset: 0,
+  pageSize: 60,
+  renderedCount: 0,
 };
 
 const els = {};
@@ -68,8 +71,8 @@ function fmtDate(iso) {
   return d.toISOString().slice(0, 10);
 }
 
-function renderEntry(item, index) {
-  const folio = String(index + 1).padStart(3, "0");
+function renderEntry(item, folioNumber) {
+  const folio = String(folioNumber).padStart(3, "0");
   const tags = (item.tags || []).map(
     (t) => `<span class="tag-chip" data-tag="${escapeHtml(t)}">${escapeHtml(t)}</span>`
   ).join("");
@@ -101,25 +104,44 @@ function renderEntry(item, index) {
     </div>`;
 }
 
-async function loadEntries() {
+async function loadEntries(reset = true) {
   const params = new URLSearchParams();
   if (state.q) params.set("q", state.q);
   if (state.source) params.set("source", state.source);
   if (state.tag) params.set("tag", state.tag);
   if (state.title) params.set("title", state.title);
   if (state.flagged) params.set("flagged", "1");
-  params.set("limit", "60");
+  params.set("limit", String(state.pageSize));
 
-  $("entries").innerHTML = `<div class="empty-state">লোড হচ্ছে...</div>`;
+  if (reset) {
+    state.offset = 0;
+    state.renderedCount = 0;
+    $("entries").innerHTML = `<div class="empty-state">লোড হচ্ছে...</div>`;
+    $("load-more").style.display = "none";
+  }
+  params.set("offset", String(state.offset));
+
   try {
     const data = await apiFetch("/api/highlights?" + params.toString());
-    if (!data.results.length) {
+    if (reset && !data.results.length) {
       $("entries").innerHTML = `<div class="empty-state"><div class="big">কিছু পাওয়া যায়নি</div>খোঁজ বা ফিল্টার পাল্টে দেখুন।</div>`;
       return;
     }
-    $("entries").innerHTML = data.results.map(renderEntry).join("");
+    const html = data.results.map((item) => {
+      state.renderedCount += 1;
+      return renderEntry(item, state.renderedCount);
+    }).join("");
+
+    if (reset) {
+      $("entries").innerHTML = html;
+    } else {
+      $("entries").insertAdjacentHTML("beforeend", html);
+    }
+
+    state.offset += data.results.length;
+    $("load-more").style.display = data.results.length === state.pageSize ? "inline-block" : "none";
   } catch (e) {
-    $("entries").innerHTML = `<div class="empty-state">লোড করতে সমস্যা হচ্ছে — সেটিংস চেক করুন।</div>`;
+    if (reset) $("entries").innerHTML = `<div class="empty-state">লোড করতে সমস্যা হচ্ছে — সেটিংস চেক করুন।</div>`;
   }
 }
 
@@ -229,6 +251,8 @@ function bindEvents() {
   $("settings-btn").addEventListener("click", openSettings);
   $("settings-cancel").addEventListener("click", closeSettings);
   $("settings-save").addEventListener("click", saveSettings);
+
+  $("load-more").addEventListener("click", () => loadEntries(false));
 }
 
 function debounce(fn, wait) {
