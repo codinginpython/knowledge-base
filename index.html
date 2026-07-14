@@ -15,7 +15,11 @@
 <header class="masthead">
   <h1>Knowledge Base</h1>
   <div class="tagline">PDF · EPUB · News — এক জায়গায়, ফোলিও ০০১ থেকে</div>
-  <button class="settings-btn" id="settings-btn">সেটিংস</button>
+  <div class="header-actions">
+    <button class="size-btn" id="size-down" title="ছোট">－</button>
+    <button class="size-btn" id="size-up" title="বড়">＋</button>
+    <button class="settings-btn" id="settings-btn">সেটিংস</button>
+  </div>
 </header>
 
 <section class="resurface" id="resurface" style="display:none">
@@ -33,7 +37,7 @@
 </section>
 
 <section class="controls" id="title-row" style="display:none">
-  <select id="title-select" style="flex:1;padding:9px 10px;border:1px solid var(--rule-strong);border-radius:3px;font-family:'IBM Plex Sans',sans-serif;">
+  <select id="title-select">
     <option value="">— সব বই/ডকুমেন্ট —</option>
   </select>
 </section>
@@ -41,7 +45,7 @@
 <div class="tag-row" id="tag-row"></div>
 
 <main id="entries"></main>
-<div style="text-align:center;padding:20px;">
+<div class="load-more-wrap">
   <button class="btn secondary" id="load-more" style="display:none">আরও দেখাও</button>
 </div>
 
