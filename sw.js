@@ -1,4 +1,4 @@
-const CACHE_NAME = "kb-shell-v4";
+const CACHE_NAME = "kb-shell-v5";
 const SHELL_FILES = ["./index.html", "./capture.html", "./style.css", "./app.js", "./manifest.json"];
 
 self.addEventListener("install", (event) => {
