@@ -1,10 +1,6 @@
-const CACHE_NAME = "kb-shell-v5";
-const SHELL_FILES = ["./index.html", "./capture.html", "./style.css", "./app.js", "./manifest.json"];
+const CACHE_NAME = "kb-shell-network-first-v1";
 
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL_FILES))
-  );
+self.addEventListener("install", () => {
   self.skipWaiting();
 });
 
@@ -17,12 +13,20 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// App-shell files: cache-first. Everything else (API calls): network-only.
+// Network-first for our own files: always try to fetch the latest version.
+// Only fall back to the cached copy if there's no internet connection.
+// This means future code updates show up automatically - no version bump needed.
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return; // let API calls pass through untouched
 
   event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
+    fetch(event.request)
+      .then((response) => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
